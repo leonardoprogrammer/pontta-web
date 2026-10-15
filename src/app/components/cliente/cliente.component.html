@@ -1,0 +1,105 @@
+<header class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Clientes</h1>
+        <p class="mt-1 text-sm text-slate-500">Gerencie o cadastro de clientes.</p>
+    </div>
+</header>
+
+<section class="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
+    <div>
+        <form class="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="buscarPorId()">
+            <div class="min-w-[200px] flex-1">
+                <label for="busca-id" class="block text-xs font-medium text-slate-500">Buscar por ID</label>
+                <input id="busca-id" type="text" class="campo-texto mt-1 w-full" placeholder="Informe o ID do cliente"
+                    [ngModel]="idBusca()" (ngModelChange)="idBusca.set($event)" name="idBusca" />
+            </div>
+            <button type="submit" class="botao-secundario">Buscar</button>
+            @if (buscaAtiva()) {
+                <button type="button" class="botao-secundario" (click)="limparBusca()">Limpar</button>
+            }
+        </form>
+
+        <div class="mt-6">
+            @if (carregando() || buscandoPorId()) {
+                <p class="text-slate-500" role="status">{{ buscandoPorId() ? 'Buscando cliente...' : 'Carregando clientes...' }}</p>
+            } @else if (falhou()) {
+                <div class="aviso aviso-erro space-y-3" role="alert">
+                    <p>Não foi possível carregar os clientes.</p>
+                    <button type="button" class="botao-secundario" (click)="carregar()">Tentar de novo</button>
+                </div>
+            } @else if (clientesExibidos().length === 0) {
+                <div class="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-10 text-center">
+                    <h2 class="text-lg font-semibold text-slate-900">Nenhum cliente encontrado</h2>
+                </div>
+            } @else {
+                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 font-semibold">ID</th>
+                                <th scope="col" class="px-6 py-3 font-semibold">Nome</th>
+                                <th scope="col" class="px-6 py-3 font-semibold">Endereço</th>
+                                <th scope="col" class="px-6 py-3 font-semibold text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @for (cliente of clientesExibidos(); track cliente.id) {
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 font-mono text-xs text-slate-400">{{ cliente.id }}</td>
+                                    <td class="px-6 py-4 font-medium text-slate-900">{{ cliente.nome }}</td>
+                                    <td class="px-6 py-4 text-slate-600">{{ cliente.endereco }}</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button type="button" class="botao-secundario" (click)="editarCliente(cliente)">Editar</button>
+                                            <button type="button" class="botao-perigo" (click)="excluirCliente(cliente.id)">Excluir</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <aside>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-semibold text-slate-900">
+                    {{ modoEdicao() ? 'Editar cliente' : 'Novo cliente' }}
+                </h2>
+                @if (formularioAberto()) {
+                    <button type="button" class="text-sm text-slate-400 hover:text-slate-600" (click)="cancelarFormulario()">Cancelar</button>
+                }
+            </div>
+
+            @if (formularioAberto()) {
+                <form class="mt-4 space-y-4" (ngSubmit)="salvarCliente()">
+                    @if (modoEdicao()) {
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500">ID</label>
+                            <p class="mt-1 font-mono text-xs text-slate-400">{{ clienteForm.id }}</p>
+                        </div>
+                    }
+                    <div>
+                        <label for="form-nome" class="block text-xs font-medium text-slate-500">Nome</label>
+                        <input id="form-nome" type="text" class="campo-texto mt-1 w-full" required
+                            [(ngModel)]="clienteForm.nome" name="nome" />
+                    </div>
+                    <div>
+                        <label for="form-endereco" class="block text-xs font-medium text-slate-500">Endereço</label>
+                        <input id="form-endereco" type="text" class="campo-texto mt-1 w-full"
+                            [(ngModel)]="clienteForm.endereco" name="endereco" />
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" class="botao-secundario" (click)="cancelarFormulario()">Cancelar</button>
+                        <button type="submit" class="botao-primario">{{ modoEdicao() ? 'Atualizar' : 'Salvar' }}</button>
+                    </div>
+                </form>
+            } @else {
+                <button type="button" class="botao-primario mt-4 w-full" (click)="abrirNovoCliente()">+ Novo cliente</button>
+            }
+        </div>
+    </aside>
+</section>
